@@ -96,7 +96,7 @@ Route::middleware(['custom.auth'])->group(function () {
         Route::post('settings/preferences', [\App\Http\Controllers\Admin\SettingsController::class, 'updatePreferences'])
             ->name('settings.update-preferences');
         Route::get('settings/reset', [\App\Http\Controllers\Admin\SettingsController::class, 'reset'])
-            ->name('settings.reset');
+            ->name('settings.adminreset');
 
         // AJAX routes for POS layout
         Route::post('pos-layouts/{layout}/update-positions', [\App\Http\Controllers\Admin\PosLayoutController::class, 'updatePositions'])
