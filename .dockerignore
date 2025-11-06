@@ -1,0 +1,65 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+
+# Development files
+.env
+.env.local
+.env.example
+.env.testing
+.env.production
+
+# Node modules and build artifacts
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Laravel specific
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/bootstrap/cache/*
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+
+# Deployment files
+deploy.sh
+Procfile
+
+# Testing
+/tests/
+phpunit.xml
+.phpunit.cache
+
+# Vendor (will be installed during build)
+/vendor/
+
+# Public storage (will be linked)
+/public/storage
