@@ -178,6 +178,84 @@
     </div>
 </div>
 
+<!-- Purchase Trends and Category Performance -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="dashboard-section">
+            <h3>Purchase Trends</h3>
+            <div class="purchase-trend">
+                ${{ number_format($purchaseStats['thisMonth'], 0) }}
+                <span class="{{ $purchaseStats['growth'] >= 0 ? 'positive' : 'negative' }}">
+                    ({{ $purchaseStats['growth'] >= 0 ? '+' : '' }}{{ number_format($purchaseStats['growth'], 1) }}%)
+                </span>
+            </div>
+            <div class="mini-stats">
+                <div class="mini-stat">
+                    <div class="value">{{ $purchaseStats['orderCount'] }}</div>
+                    <div class="label">Orders This Month</div>
+                </div>
+                <div class="mini-stat">
+                    <div class="value">${{ number_format($purchaseStats['averageOrder'], 0) }}</div>
+                    <div class="label">Average Order</div>
+                </div>
+            </div>
+            <div class="chart-container mt-3">
+                <canvas id="purchaseTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="dashboard-section">
+            <h3>Category Performance</h3>
+            <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Purchase Orders -->
+<div class="dashboard-section">
+    <h3>Recent Purchase Orders</h3>
+    @if($recentPurchases->count() > 0)
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Supplier</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($recentPurchases as $purchase)
+                        <tr class="purchase-row">
+                            <td><strong>{{ $purchase->invoice_number }}</strong></td>
+                            <td>{{ $purchase->supplier ? $purchase->supplier->name : 'N/A' }}</td>
+                            <td>{{ $purchase->invoice_date ? $purchase->invoice_date->format('M d, Y') : 'N/A' }}</td>
+                            <td>{{ $purchase->location ? $purchase->location->name : 'N/A' }}</td>
+                            <td><strong>${{ number_format($purchase->total_amount, 2) }}</strong></td>
+                            <td>
+                                <span class="purchase-status badge-info">
+                                    {{ ucfirst($purchase->status) }}
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <div class="text-center py-4">
+            <i class="fas fa-shopping-cart fa-2x text-muted mb-2"></i>
+            <p class="text-muted">No recent purchase orders found.</p>
+        </div>
+    @endif
+</div>
+
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title">Inventory Overview</h3>
