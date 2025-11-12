@@ -5,6 +5,7 @@
 @section('page-title', 'Inventory Management')
 
 @section('styles')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
     .filters {
         background: #fff;
@@ -50,6 +51,7 @@
     .badge-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .badge-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
     .badge-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .badge-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
     .actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .stats-cards {
         display: grid;
@@ -68,6 +70,81 @@
     .stat-card:hover { transform: translateY(-5px); }
     .stat-number { font-size: 28px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
     .stat-label { font-size: 13px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Dashboard Sections */
+    .dashboard-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    .dashboard-section h3 {
+        color: #2c3e50;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    .purchase-trend {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    .purchase-trend .positive { color: #27ae60; }
+    .purchase-trend .negative { color: #e74c3c; }
+    .mini-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+    }
+    .mini-stat {
+        text-align: center;
+        flex: 1;
+    }
+    .mini-stat .value {
+        font-size: 20px;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    .mini-stat .label {
+        font-size: 12px;
+        color: #7f8c8d;
+    }
+
+    /* Recent Purchases Table */
+    .purchase-row {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .purchase-row:hover {
+        background-color: #f8f9fa;
+    }
+    .purchase-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .stats-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .chart-container {
+            height: 250px;
+        }
+        .mini-stats {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
 </style>
 @endsection
 
