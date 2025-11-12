@@ -381,3 +381,125 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    // Purchase Trend Chart
+    const purchaseTrendCtx = document.getElementById('purchaseTrendChart').getContext('2d');
+    const purchaseTrendData = @json($purchaseTrendData);
+
+    new Chart(purchaseTrendCtx, {
+        type: 'line',
+        data: {
+            labels: purchaseTrendData.map(item => item.month),
+            datasets: [{
+                label: 'Monthly Purchases',
+                data: purchaseTrendData.map(item => item.value),
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#3498db',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Purchases: $' + new Intl.NumberFormat().format(context.parsed.y.toFixed(0));
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + new Intl.NumberFormat().format(value);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Category Performance Chart
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryData = @json($categoryData);
+
+    new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: categoryData.labels,
+            datasets: [{
+                data: categoryData.values,
+                backgroundColor: categoryData.colors,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = '$' + new Intl.NumberFormat().format(context.parsed.toFixed(0));
+                            const count = categoryData.productCounts[context.dataIndex];
+                            return [
+                                label + ': ' + value,
+                                'Products: ' + count
+                            ];
+                        }
+                    }
+                }
+            },
+            onClick: function(evt, activeElements) {
+                if (activeElements.length > 0) {
+                    const index = activeElements[0].index;
+                    const category = categoryData.labels[index];
+
+                    // Create a form element to filter by category
+                    const form = document.createElement('form');
+                    form.method = 'GET';
+                    form.action = '{{ route("admin.inventory.index") }}';
+
+                    // Add category filter
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'category_filter';
+                    input.value = category;
+                    form.appendChild(input);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            }
+        }
+    });
+</script>
+@endpush
