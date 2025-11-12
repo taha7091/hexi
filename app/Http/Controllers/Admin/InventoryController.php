@@ -275,4 +275,147 @@ class InventoryController extends Controller
 
         return view('admin.inventory.report', compact('products', 'groups'));
     }
+
+    /**
+     * Calculate purchase statistics for dashboard
+     */
+    private function calculatePurchaseStats($user)
+    {
+        $companyId = $user->isMasterAdmin() ? null : $user->company_id;
+
+        $thisMonth = InventoryPurchase::when($companyId, function($q) use ($companyId) {
+            $q->where('company_id', $companyId);
+        })
+        ->whereMonth('invoice_date', Carbon::now()->month)
+        ->whereYear('invoice_date', Carbon::now()->year);
+
+        $lastMonth = InventoryPurchase::when($companyId, function($q) use ($companyId) {
+            $q->where('company_id', $companyId);
+        })
+        ->whereMonth('invoice_date', Carbon::now()->subMonth()->month)
+        ->whereYear('invoice_date', Carbon::now()->subMonth()->year);
+
+        $thisMonthData = $thisMonth->get();
+        $lastMonthData = $lastMonth->get();
+
+        $thisMonthTotal = $thisMonthData->sum('total_amount');
+        $lastMonthTotal = $lastMonthData->sum('total_amount');
+
+        return [
+            'thisMonth' => $thisMonthTotal,
+            'lastMonth' => $lastMonthTotal,
+            'orderCount' => $thisMonthData->count(),
+            'averageOrder' => $thisMonthData->count() > 0 ? $thisMonthTotal / $thisMonthData->count() : 0,
+            'growth' => $lastMonthTotal > 0 ? (($thisMonthTotal - $lastMonthTotal) / $lastMonthTotal) * 100 : 0
+        ];
+    }
+
+    /**
+     * Get recent purchase orders
+     */
+    private function getRecentPurchases($user, $limit = 10)
+    {
+        $companyId = $user->isMasterAdmin() ? null : $user->company_id;
+
+        return InventoryPurchase::with(['supplier', 'location'])
+            ->when($companyId, function($q) use ($companyId) {
+                $q->where('company_id', $companyId);
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Get category performance data for charts
+     */
+    private function getCategoryPerformanceData($user)
+    {
+        $query = Product::with(['group.division.category.brand'])
+            ->selectRaw('
+                c.name as category_name,
+                SUM(stock_quantity * cost_price) as total_value,
+                COUNT(*) as product_count
+            ')
+            ->join('groups as g', 'products.group_id', '=', 'g.id')
+            ->join('divisions as d', 'g.division_id', '=', 'd.id')
+            ->join('categories as c', 'd.category_id', '=', 'c.id');
+
+        if (!$user->isMasterAdmin()) {
+            $query->whereHas('group.division.category.brand', function($q) use ($user) {
+                $q->where('company_id', $user->company_id);
+            });
+        }
+
+        $categories = $query->groupBy('c.id', 'c.name')
+            ->orderBy('total_value', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Generate colors for chart
+        $colors = [
+            '#3498db', '#e74c3c', '#f39c12', '#2ecc71', '#9b59b6',
+            '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#16a085'
+        ];
+
+        return [
+            'labels' => $categories->pluck('category_name')->toArray(),
+            'values' => $categories->pluck('total_value')->toArray(),
+            'colors' => array_slice($colors, 0, $categories->count()),
+            'productCounts' => $categories->pluck('product_count')->toArray()
+        ];
+    }
+
+    /**
+     * Get 6-month purchase trend data
+     */
+    private function getPurchaseTrendData($user)
+    {
+        $companyId = $user->isMasterAdmin() ? null : $user->company_id;
+
+        $months = collect();
+        for ($i = 5; $i >= 0; $i--) {
+            $months->push(Carbon::now()->subMonths($i));
+        }
+
+        $trendData = [];
+        foreach ($months as $month) {
+            $total = InventoryPurchase::when($companyId, function($q) use ($companyId) {
+                $q->where('company_id', $companyId);
+            })
+            ->whereMonth('invoice_date', $month->month)
+            ->whereYear('invoice_date', $month->year)
+            ->sum('total_amount');
+
+            $trendData[] = [
+                'month' => $month->format('M Y'),
+                'value' => $total
+            ];
+        }
+
+        return $trendData;
+    }
+
+    /**
+     * Get top category by inventory value
+     */
+    private function getTopCategory($user)
+    {
+        $query = Product::join('groups as g', 'products.group_id', '=', 'g.id')
+            ->join('divisions as d', 'g.division_id', '=', 'd.id')
+            ->join('categories as c', 'd.category_id', '=', 'c.id')
+            ->selectRaw('c.name as category_name, SUM(stock_quantity * cost_price) as total_value');
+
+        if (!$user->isMasterAdmin()) {
+            $query->whereHas('group.division.category.brand', function($q) use ($user) {
+                $q->where('company_id', $user->company_id);
+            });
+        }
+
+        $topCategory = $query->groupBy('c.id', 'c.name')
+            ->orderBy('total_value', 'desc')
+            ->first();
+
+        return $topCategory ?: (object) ['category_name' => 'N/A', 'total_value' => 0];
+    }
 }
