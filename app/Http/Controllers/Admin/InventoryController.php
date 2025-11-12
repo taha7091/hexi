@@ -96,9 +96,17 @@ class InventoryController extends Controller
             })
             ->first()->total_value ?? 0;
 
+        // Calculate additional dashboard data
+        $purchaseStats = $this->calculatePurchaseStats($user);
+        $recentPurchases = $this->getRecentPurchases($user);
+        $categoryData = $this->getCategoryPerformanceData($user);
+        $purchaseTrendData = $this->getPurchaseTrendData($user);
+        $topCategory = $this->getTopCategory($user);
+
         return view('admin.inventory.index', compact(
-            'products', 'groups', 'totalProducts', 'lowStockCount', 
-            'outOfStockCount', 'totalValue'
+            'products', 'groups', 'totalProducts', 'lowStockCount',
+            'outOfStockCount', 'totalValue', 'purchaseStats', 'recentPurchases',
+            'categoryData', 'purchaseTrendData', 'topCategory'
         ));
     }
 
