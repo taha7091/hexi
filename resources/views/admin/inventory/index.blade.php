@@ -168,6 +168,14 @@
         <div class="stat-number">${{ number_format($totalValue, 0) }}</div>
         <div class="stat-label">Inventory Value</div>
     </div>
+    <div class="stat-card">
+        <div class="stat-number">${{ number_format($purchaseStats['thisMonth'], 0) }}</div>
+        <div class="stat-label">Purchase This Month</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ $topCategory->category_name }}</div>
+        <div class="stat-label">Top Category</div>
+    </div>
 </div>
 
 <div class="card">
