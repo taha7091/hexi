@@ -10,6 +10,7 @@
         padding: 20px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         margin-top: 20px;
+        overflow-x: auto;
     }
 
     table {
@@ -34,25 +35,6 @@
         background: #f7f9fc;
     }
 
-    .status-badge {
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .status-active {
-        background: #c6f6d5;
-        color: #22543d;
-    }
-
-    .status-inactive {
-        background: #fed7d7;
-        color: #742a2a;
-    }
-
     .header-actions {
         display: flex;
         justify-content: space-between;
@@ -60,7 +42,7 @@
         margin-bottom: 15px;
     }
 
-    .search-filters {
+    .search-filters, .location-box {
         background: white;
         padding: 20px;
         border-radius: 15px;
@@ -103,6 +85,7 @@
         font-size: 14px;
         text-decoration: none;
         border: none;
+        transition: all 0.2s ease;
     }
 
     .btn-primary {
@@ -116,9 +99,9 @@
         border: 1px solid #ccc;
     }
 
-    .btn-sm {
-        padding: 5px 10px;
-        font-size: 12px;
+    .btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
     }
 
     .alert {
@@ -172,7 +155,7 @@
     </div>
 @endif
 
-{{-- Filters --}}
+{{-- Filters for Search --}}
 @if(isset($items))
 <div class="search-filters">
     <form method="GET" action="{{ route('admin.inventory-adjustments.count') }}">
@@ -188,99 +171,124 @@
 </div>
 @endif
 
-{{-- Batch History or Items --}}
+{{-- Stock Count Views --}}
 @if(isset($batchAdjustments))
-<div class="table-container">
-    <table>
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Location</th>
-                <th class="text-end">Before</th>
-                <th class="text-end">Change</th>
-                <th class="text-end">After</th>
-                <th>User</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($batchAdjustments as $adj)
-                <tr>
-                    <td>{{ $adj->inventoryItem->name ?? '#' }}</td>
-                    <td>{{ $adj->location->name ?? '-' }}</td>
-                    <td class="text-end">{{ number_format($adj->quantity_before, 6) }}</td>
-                    <td class="text-end">{{ number_format($adj->adjustment_amount, 6) }}</td>
-                    <td class="text-end">{{ number_format($adj->quantity_after, 6) }}</td>
-                    <td>{{ $adj->user->name ?? '-' }}</td>
-                    <td>{{ $adj->created_at->format('Y-m-d H:i') }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-</div>
-@elseif(isset($groups))
-<div class="table-container">
-    <table>
-        <thead>
-            <tr>
-                <th>Batch</th>
-                <th>Date</th>
-                <th>Location</th>
-                <th>Items</th>
-                <th>User</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($groups as $g)
-                <tr>
-                    <td><code>{{ $g['code'] }}</code></td>
-                    <td>{{ \Illuminate\Support\Carbon::parse($g['created_at'])->format('Y-m-d H:i') }}</td>
-                    <td>{{ optional($locationsMap->get($g['location_id']))->name ?? '-' }}</td>
-                    <td>{{ $g['count'] }}</td>
-                    <td>{{ optional($usersMap->get($g['user_id']))->name ?? '-' }}</td>
-                    <td class="text-end"><a href="{{ route('admin.inventory-adjustments.count', ['batch' => $g['code']]) }}" class="btn btn-sm btn-secondary">Preview</a></td>
-                </tr>
-            @empty
-                <tr><td colspan="6" class="text-center p-4">No stock count history yet.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
-@elseif(isset($items))
-<form method="POST" action="{{ route('admin.inventory-adjustments.count-apply') }}">
-    @csrf
+    {{-- Single Batch Preview --}}
     <div class="table-container">
         <table>
             <thead>
                 <tr>
                     <th>Item</th>
-                    <th>Unit</th>
-                    <th class="text-end">On Hand (System)</th>
-                    <th class="text-end">New On Hand</th>
-                    <th class="text-end">Variance</th>
+                    <th>Location</th>
+                    <th class="text-end">Before</th>
+                    <th class="text-end">Change</th>
+                    <th class="text-end">After</th>
+                    <th>User</th>
+                    <th>Date</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($items as $item)
-                <tr data-item-id="{{ $item->id }}">
-                    <td>{{ $item->name }}</td>
-                    <td>{{ $item->stockUnit->symbol ?? '' }}</td>
-                    <td class="text-end current">{{ number_format($item->current_stock,6) }}</td>
-                    <td class="text-end">
-                        <input type="number" name="new_qty[{{ $item->id }}]" class="form-control form-control-sm text-end new-qty"
-                               step="0.000001" min="0" placeholder="{{ number_format($item->current_stock,6) }}">
-                    </td>
-                    <td class="text-end variance">0.000000</td>
-                </tr>
+                @foreach($batchAdjustments as $adj)
+                    <tr>
+                        <td>{{ $adj->inventoryItem->name ?? '#' }}</td>
+                        <td>{{ $adj->location->name ?? '-' }}</td>
+                        <td class="text-end">{{ number_format($adj->quantity_before, 6) }}</td>
+                        <td class="text-end">{{ number_format($adj->adjustment_amount, 6) }}</td>
+                        <td class="text-end">{{ number_format($adj->quantity_after, 6) }}</td>
+                        <td>{{ $adj->user->name ?? '-' }}</td>
+                        <td>{{ $adj->created_at->format('Y-m-d H:i') }}</td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
-        <div class="mt-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Apply Adjustments</button>
-        </div>
     </div>
-</form>
+
+@elseif(isset($groups))
+    {{-- Batch History --}}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Batch</th>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Items</th>
+                    <th>User</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($groups as $g)
+                    <tr>
+                        <td><code>{{ $g['code'] }}</code></td>
+                        <td>{{ \Illuminate\Support\Carbon::parse($g['created_at'])->format('Y-m-d H:i') }}</td>
+                        <td>{{ optional($locationsMap->get($g['location_id']))->name ?? '-' }}</td>
+                        <td>{{ $g['count'] }}</td>
+                        <td>{{ optional($usersMap->get($g['user_id']))->name ?? '-' }}</td>
+                        <td class="text-end">
+                            <a href="{{ route('admin.inventory-adjustments.count', ['batch' => $g['code']]) }}" class="btn btn-sm btn-secondary">Preview</a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="6" class="text-center p-4">No stock count history yet.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+@elseif(isset($items))
+    {{-- New Stock Count Form --}}
+    <form method="POST" action="{{ route('admin.inventory-adjustments.count-apply') }}">
+        @csrf
+
+        <div class="location-box">
+            <div class="filter-group">
+                <label for="location_id">Select Location</label>
+                <select name="location_id" id="location_id" class="form-select" required>
+                    <option value="">-- Choose Location --</option>
+                    @foreach($locations as $loc)
+                        <option value="{{ $loc->id }}">{{ $loc->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Unit</th>
+                        <th class="text-end">On Hand (System)</th>
+                        <th class="text-end">New On Hand</th>
+                        <th class="text-end">Variance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($items as $item)
+                        <tr data-item-id="{{ $item->id }}">
+                            <td>{{ $item->name }}</td>
+                            <td>{{ $item->stockUnit->symbol ?? '' }}</td>
+                            <td class="text-end current">{{ number_format($item->current_stock, 6) }}</td>
+                            <td class="text-end">
+                                <input type="number" 
+                                       name="new_qty[{{ $item->id }}]" 
+                                       class="form-control form-control-sm text-end new-qty"
+                                       step="0.000001" 
+                                       min="0" 
+                                       placeholder="{{ number_format($item->current_stock, 6) }}">
+                            </td>
+                            <td class="text-end variance">0.000000</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            <div class="mt-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Apply Adjustments</button>
+            </div>
+        </div>
+    </form>
 @endif
 @endsection
 

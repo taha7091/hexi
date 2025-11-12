@@ -1211,7 +1211,12 @@
                             <i class="menu-icon">🖥️</i> <span>Screen Setup</span>
                         </a>
                         @endif
-
+                        <a href="{{ route('admin.sales.index') }}" class="menu-item {{ request()->routeIs('admin.sales.*') ? 'active' : '' }}">
+                        <i class="menu-icon">💰</i> <span>Sales</span>
+                    </a>                    
+                    <a href="{{ route('admin.settings.index') }}" class="menu-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                        <i>⚙️</i> <span>Settings</span>
+                    </a>
                 </div>
             </div>
 
@@ -1329,9 +1334,7 @@
                         </a>
 
 
-                    <a href="{{ route('admin.sales.index') }}" class="menu-item {{ request()->routeIs('admin.sales.*') ? 'active' : '' }}">
-                        <i class="menu-icon">💰</i> <span>Sales</span>
-                    </a>
+                   
                 </div>
             </div>
 
@@ -1405,11 +1408,14 @@
                         <i>📦</i> <span>Products</span>
                     </a>
                 </div>
-                <div class="menu-section">
-                    <div class="menu-section-title">System</div>
-                    <a href="{{ route('admin.settings.index') }}" class="menu-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                        <i>⚙️</i> <span>Settings</span>
-                    </a>
+                    <a href="{{ route('admin.sales.index') }}" class="menu-item {{ request()->routeIs('admin.sales.*') ? 'active' : '' }}">
+                            <i class="menu-icon">💰</i> <span>Sales</span>
+                        </a>
+                    <div class="menu-section">
+                        <div class="menu-section-title">System</div>
+                        <a href="{{ route('admin.settings.index') }}" class="menu-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                            <i>⚙️</i> <span>Settings</span>
+                        </a>
                 </div>
             @endif
         </div>
@@ -1618,7 +1624,7 @@
                 mainContent.classList.remove('expanded');
                 toggleIcon.textContent = '‹';
             }
-        }
+        }   
 
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', function(event) {

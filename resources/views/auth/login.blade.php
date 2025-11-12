@@ -9,6 +9,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        
         }
         
         body {
@@ -22,6 +23,7 @@
         
         .login-container {
             background: white;
+           
             padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);

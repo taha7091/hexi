@@ -290,5 +290,6 @@ class InventoryAdjustmentController extends Controller
             ->with('success', 'Stock count applied successfully.')
             ->with('created_adjustments', $created);
     }
+    
 }
 

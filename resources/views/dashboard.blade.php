@@ -9,7 +9,7 @@
         <div class="dashboard-cards">
             <div class="dashboard-card">
                 <div class="card-header">
-                    <div class="card-title">Companies</div>
+                    <div class="card-title">Companie11s</div>
                     <div class="card-icon" style="background: linear-gradient(135deg, #007bff, #0056b3);">🏢</div>
                 </div>
                 <div class="card-value">{{ \App\Models\Company::count() }}</div>
@@ -176,13 +176,10 @@
             padding: 25px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+          
         }
 
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }
+     
 
         .card-header {
             display: flex;
@@ -228,9 +225,7 @@
             font-weight: 500;
         }
 
-        .card-link:hover {
-            text-decoration: underline;
-        }
+      
 
         /* Quick Actions */
         .quick-actions {
